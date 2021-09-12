@@ -11,10 +11,10 @@
 .stack 256
 
 .data
-a dw 8
-b dw 3
-c dw 2
-d dw 2
+a dw 1
+b dw 0
+c dw 0
+d dw 1
 
 .code
 
@@ -67,7 +67,7 @@ firstIf:       ; a > b ^ 2
     mul ax     ; ax = ax ^ 2 
 
     cmp bx, ax ; bx = a, ax = b ^ 2
-    jl secondIf ; if a > b ^ 2
+    jl secondIf
 
 
 firstSolution:  ; c ^ 2 / (d - c) - d ^ 2
