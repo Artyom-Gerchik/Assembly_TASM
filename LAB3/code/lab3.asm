@@ -21,6 +21,8 @@ space db 10,'$'
 
 wrongInput db 10,'ERROR! WRONG INPUT! TERMINATING THE PROGRAM!',13,10,'$'
 overFlow db 10,'ERROR! OVERFLOW! TERMINATING THE PROGRAM!',13,10,'$'
+overFlow1 db 10, 'ERROR! INPUT < -32.768',13,10,'$'
+overFlow2 db 10, 'ERROR! INPUT > 32.767',13,10,'$'
 divisionByZero db 10,'ERROR! DIVISION BY ZERO! TERMINATING THE PROGRAM!',13,10,'$'
 
 enterA db 'Enter a:  $'
@@ -163,7 +165,7 @@ endLoop:
     cmp minus, 1 ; 1 means that number with minus
     jne endLoopA
     cmp cx, 32768
-    jg overflowLabel ; if cx < - 32768
+    jg overflowLabel1 ; if cx < - 32768
     neg cx
 
 endLoopA:
@@ -171,6 +173,7 @@ endLoopA:
     cmp aEntered, 0
     jne endLoopB
     cmp cx, 32767 ; if cx > 32767
+    jg overFlowLabel2
     mov a, cx
     mov aEntered, 1
     mov minus, 0
@@ -182,6 +185,7 @@ endLoopB:
     cmp bEntered, 0
     jne endLoopC
     cmp cx, 32767 ; if cx > 32767
+    jg overFlowLabel2
     mov b, cx
     mov bEntered, 1
     mov minus, 0
@@ -193,6 +197,7 @@ endLoopC:
     cmp cEntered, 0
     jne endLoopD
     cmp cx, 32767 ; if cx > 32767
+    jg overFlowLabel2
     mov c, cx
     mov cEntered, 1
     mov minus, 0
@@ -204,6 +209,7 @@ endLoopD:
     cmp dEntered, 0
     jne leftPart
     cmp cx, 32767 ; if cx > 32767
+    jg overFlowLabel2
     mov d, cx
     mov dEntered, 1
     mov minus, 0
@@ -388,6 +394,20 @@ popResultFromStack:
 overflowLabel:
 
     lea dx, overFlow
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    jmp exit
+
+overflowLabel1:
+
+    lea dx, overFlow1
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    jmp exit
+
+overflowLabel2:
+
+    lea dx, overFlow2
     mov ah, 09h  ; display string, which is stored in dx
     int 21h
     jmp exit
