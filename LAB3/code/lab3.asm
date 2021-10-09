@@ -17,6 +17,14 @@
 
 .data
 greetings db 10,'Hello!',13,10,10,'$'
+
+firstCase db 10, '1 - Output Hard - Wired Value Of AX',13,10,'$'
+secondCase db 10, '2 - Enter & Output Value Of AX',13,10,'$'
+thirdCase db 10,'3 - Signed Division',13,10,'$'
+fourthCase db 10,'4 - Main App',13,10,'$'
+choice db 10, 'Your Choice: ','$'
+
+enterNumsForDiv db 10,'Enter Numbers For Division (a / b)',13,10,'$'
 space db 10,'$'
 
 wrongInput db 10,'ERROR! WRONG INPUT! TERMINATING THE PROGRAM!',13,10,'$'
@@ -46,6 +54,15 @@ minus dw 0
 zero dw 0
 counter dw 0
 
+limit dw 32767
+
+tempMinus dw 0
+signedDiv dw 0
+stopEnter dw 0
+tempVal dw -5
+
+state dw, 0
+
 .code
 .386
 
@@ -60,7 +77,122 @@ greetingsFunc:
     mov ah, 09h  ; display string, which is stored in dx
     int 21h
 
+    lea dx, firstCase
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    lea dx, secondCase
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    lea dx, thirdCase
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    lea dx, fourthCase
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    lea dx, choice
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    mov ah, 01h
+    int 21h      ; al - first symbol
+
+    sub al, 30h  ; now al - first number (30h - 'ascii 0')
+    mov ah, 0    ; extend to word
+
+    mov state, ax
+
+    lea dx, space
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+    cmp state, 1
+    je outputFromAxHard
+
+    cmp state, 2
+    je outputFromAxSoft
+
+    cmp state, 3
+    je divTwoSigned
+
+    cmp state, 4
+    je enterAFunc
+
+    jmp exit
+
+outputFromAxHard proc
+
+    mov ax, tempVal
+    jmp simpleOutput
+
+outputFromAxHard endp
+
+outputFromAxSoft proc
+
+    lea dx, enterA
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    mov stopEnter, 1
+    jmp handleFirstNum
+
+outputFromAxSoft endp
+
+divTwoSigned proc
+
+    mov signedDiv, 1
+    lea dx, enterNumsForDiv
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+
+enterAFuncForDiv:
+
+    lea dx, enterA
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    jmp handleFirstNum
+
+enterBFuncForDiv:
+
+    lea dx, enterB
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    jmp handleFirstNum
+
+startDiv:
+
+    mov ax, a
+    cmp ax, 0
+    jl makeAxNeg
+
+L:
+
+    mov bx, b 
+    mov dx, 0
+
+    idiv bx
+
+    cmp tempMinus, 1
+    jne simpleOutput
+    neg ax
+
+    jmp simpleOutput 
+
+makeAxNeg:
+
+    neg ax
+    mov tempMinus, 1
+    jmp L
+
+divTwoSigned endp
+
 enterAFunc:
+
+    lea dx, space
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
 
     lea dx, enterA
     mov ah, 09h  ; display string, which is stored in dx
@@ -142,7 +274,12 @@ loopLabel:
     jo overflowLabel
 
     add cx, ax   ; cx = (ax * 10) + cx
-    jo overflowLabel
+    
+    cmp minus, 1
+    je loopLabel
+
+    cmp cx, limit ; if cx > 32767
+    jo overFlowLabel2
 
     cmp cx, 0
     je overflowLabel
@@ -164,40 +301,42 @@ endLoop:
 
     cmp minus, 1 ; 1 means that number with minus
     jne endLoopA
-    cmp cx, 32768
-    jg overflowLabel1 ; if cx < - 32768
+    cmp cx, limit
+    jo overflowLabel1 ; if cx < - 32768
     neg cx
 
 endLoopA:
 
     cmp aEntered, 0
     jne endLoopB
-    cmp cx, 32767 ; if cx > 32767
-    jg overFlowLabel2
     mov a, cx
     mov aEntered, 1
     mov minus, 0
     mov zero, 0
+
+    cmp stopEnter, 1
+    je  simpleOutput
+
     jmp enterBFunc
 
 endLoopB:
 
     cmp bEntered, 0
     jne endLoopC
-    cmp cx, 32767 ; if cx > 32767
-    jg overFlowLabel2
     mov b, cx
     mov bEntered, 1
     mov minus, 0
     mov zero, 0
+
+    cmp signedDiv, 1
+    je startDiv
+
     jmp enterCFunc
 
 endLoopC:
 
     cmp cEntered, 0
     jne endLoopD
-    cmp cx, 32767 ; if cx > 32767
-    jg overFlowLabel2
     mov c, cx
     mov cEntered, 1
     mov minus, 0
@@ -208,8 +347,6 @@ endLoopD:
 
     cmp dEntered, 0
     jne leftPart
-    cmp cx, 32767 ; if cx > 32767
-    jg overFlowLabel2
     mov d, cx
     mov dEntered, 1
     mov minus, 0
@@ -266,7 +403,6 @@ compareLeftAndRight:
     cmp cx, bx
     jne secondIf
 
-
 firstIf:       ; a > b ^ 2
 
     mov bx, a
@@ -277,7 +413,6 @@ firstIf:       ; a > b ^ 2
 
     cmp bx, ax ; bx = a, ax = b ^ 2
     jl secondIf
-
 
 firstSolution:  ; c ^ 2 / (d - c) - d ^ 2
 
@@ -306,9 +441,10 @@ firstSolution:  ; c ^ 2 / (d - c) - d ^ 2
 
     mov ax, bx
 
-    jmp putResultOnStack
+    jmp simpleOutput
 
 secondIf:      ; a < c + d
+
     mov ax, a
 
     mov bx, c
@@ -317,8 +453,6 @@ secondIf:      ; a < c + d
 
     cmp ax, bx
     jg thirdSolution
-
-
 
 secondSolution: ; d ^ 2 + (b OR c)
     
@@ -337,7 +471,7 @@ secondSolution: ; d ^ 2 + (b OR c)
     add ax, bx
     jo overflowLabel
 
-    jmp putResultOnStack
+    jmp simpleOutput
 
 thirdSolution:   ; a + (b AND c)
 
@@ -354,7 +488,30 @@ thirdSolution:   ; a + (b AND c)
     add ax, bx
     jo overflowLabel
 
-    jmp putResultOnStack
+    jmp simpleOutput
+
+simpleOutput proc
+
+    cmp stopEnter, 1
+    jne testForMinus
+    mov ax, cx
+    
+testForMinus:
+
+    mov cx, ax
+    lea dx, output
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
+    mov ax, cx
+
+    test ax, ax
+    jns putResultOnStack
+    mov cx, ax
+    mov ah, 02h
+    mov dl, '-'
+    int 21h
+    mov ax, cx
+    neg ax
 
 putResultOnStack:
 
@@ -372,12 +529,6 @@ putResultOnStack:
 
     jnz putResultOnStack
 
-startOutput:
-
-    lea dx, output
-    mov ah, 09h  ; display string, which is stored in dx
-    int 21h
-
 popResultFromStack:
      
     pop dx
@@ -389,7 +540,12 @@ popResultFromStack:
     cmp counter, 0
     jne popResultFromStack
 
+    cmp signedDiv, 1
+    ;je enterAFunc
+
     jmp exit
+
+simpleOutput endp
 
 overflowLabel:
 
