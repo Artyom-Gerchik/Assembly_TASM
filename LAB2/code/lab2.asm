@@ -140,7 +140,7 @@ loopLabel:
     jo overflowLabel
 
     add cx, ax   ; cx = (ax * 10) + cx
-    jo overflowLabel
+    jc overflowLabel ; jc instead jo
 
     cmp cx, 0
     je overflowLabel
