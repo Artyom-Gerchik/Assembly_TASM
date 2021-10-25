@@ -63,6 +63,9 @@ tempVal dw -5
 
 state dw, 0
 
+minusWas dw, 0
+plusWas dw, 0
+
 .code
 .386
 
@@ -229,6 +232,9 @@ handleFirstNum:
     mov ah, 01h
     int 21h      ; al - first symbol
 
+    cmp al, 2bh
+    je plusLabel
+
     cmp al, 2dh  ; if '-'
     je minusLabel
 
@@ -249,7 +255,19 @@ handleFirstNum:
 
 minusLabel:
 
+    cmp minusWas, 1
+    je wrongInputLabel
+
     mov minus, 1
+    mov minusWas, 1
+    jmp handleFirstNum
+
+plusLabel:
+
+    cmp plusWas, 1
+    je wrongInputLabel
+
+    mov plusWas, 1
     jmp handleFirstNum
 
 loopLabel: 
@@ -309,6 +327,8 @@ endLoopA:
 
     cmp aEntered, 0
     jne endLoopB
+    mov minusWas, 0
+    mov plusWas, 0
     mov a, cx
     mov aEntered, 1
     mov minus, 0
@@ -323,6 +343,8 @@ endLoopB:
 
     cmp bEntered, 0
     jne endLoopC
+    mov minusWas, 0
+    mov plusWas, 0
     mov b, cx
     mov bEntered, 1
     mov minus, 0
@@ -337,6 +359,8 @@ endLoopC:
 
     cmp cEntered, 0
     jne endLoopD
+    mov minusWas, 0
+    mov plusWas, 0
     mov c, cx
     mov cEntered, 1
     mov minus, 0
@@ -347,6 +371,8 @@ endLoopD:
 
     cmp dEntered, 0
     jne leftPart
+    mov minusWas, 0
+    mov plusWas, 0
     mov d, cx
     mov dEntered, 1
     mov minus, 0
