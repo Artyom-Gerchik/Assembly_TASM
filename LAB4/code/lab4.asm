@@ -5,6 +5,7 @@
 .data
 inputStr db 1000 dup(?)
 space db 10,'$'
+emptySentence db 10,'emptySentence!',13,10,10,'$'
 
 vowelWasRecently dw 0
 consonantsWasRecently dw 0
@@ -163,6 +164,9 @@ testForNextSpace:
     jmp again
 
 displayWord: 
+
+    cmp si, 0
+    je emptySentenceLabel
     
     mov si, '$'
     mov di, offset inputStr
@@ -383,6 +387,12 @@ next:
 
     cmp thisWordBad, 0
     je movCounterForGetBack
+
+emptySentenceLabel:
+
+    lea dx, emptySentence
+    mov ah, 09h  ; display string, which is stored in dx
+    int 21h
 
 last: 
     
