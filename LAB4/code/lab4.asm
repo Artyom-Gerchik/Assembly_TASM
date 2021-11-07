@@ -2,6 +2,8 @@
 .stack 512
 .386
 
+;
+
 .data
 inputStr db 1000 dup(?)
 space db 10,'$'
