@@ -15,6 +15,7 @@ thisWordBad dw 0
 counter dw 0
 testTemp dw 0
 spaceWas dw 0
+minusWas dw 0
 
 
 .code
@@ -209,6 +210,22 @@ dotFinded:
     jg movCounterForGetBack
     jmp last
 
+testLabel:
+
+    inc di
+
+    mov dl, [di]
+
+    cmp dl, ' '
+    je again
+
+    jmp testLabel
+
+minusFounded:
+    
+    mov minusWas, 1
+    jmp skip
+
 testLoop:
 
     cmp vowelWasRecently, 1 
@@ -229,10 +246,19 @@ again:
     cmp dl, ' '
     je skip
 
+    cmp dl, '-'
+    je minusFounded
+
+    cmp dl, "'"
+    je testLabel
+
     cmp dl, 10
     je last
 
     cmp dl, '.'
+    je dotFinded
+    
+    cmp dl, '!'
     je dotFinded
 
     startCheck:
