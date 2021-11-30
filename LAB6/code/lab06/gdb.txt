@@ -1,0 +1,9 @@
+1. run(r) arg1, arg2 ... etc
+2. break(b) funcName / lineNum / *address
+3. next(n)
+4. step(s)
+5. 3 or 4
+6. print(p) varName / equation
+7. display varName
+8. info locals
+9. quit(q)
